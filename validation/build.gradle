@@ -19,7 +19,7 @@ javaDownload {
 }
 
 dependencies {
-	implementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+	implementation group: 'net.runelite', name: 'runelite-api', version: runeLiteVersion
 	implementation 'com.google.guava:guava:23.2-jre'
 	compileOnly 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'
