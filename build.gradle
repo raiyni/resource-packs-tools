@@ -1,0 +1,24 @@
+allprojects {
+    group = 'melky.resourcepacks'
+    version = '1.0.0'
+}
+
+
+subprojects {
+    apply plugin: "java"
+
+    java {
+        sourceCompatibility = 11
+    }
+
+    task shadowJar(type: Jar) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        archiveFileName.set "${archiveBaseName.get()}-v${project.version}.${archiveExtension.get()}"
+        from {
+            configurations.runtimeClasspath.collect {
+                it.isDirectory() ? it : zipTree(it)
+            }
+        }
+        with tasks.jar
+    }
+}

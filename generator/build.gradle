@@ -1,0 +1,55 @@
+plugins {
+	id 'io.ryoung.java-downloader'
+}
+
+repositories {
+	mavenLocal()
+	maven { url = 'https://repo.runelite.net' }
+	mavenCentral()
+}
+
+def runeLiteVersion = 'latest.release'
+def baseRepoUrl = 'https://raw.githubusercontent.com/melkypie/resource-packs/refs/heads/master'
+
+javaDownload {
+	files = [
+		[url: "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/SpriteOverride.java",
+		 path: 'src/main/java/melky/resourcepacks/model/SpriteOverride.java'],
+		[url: "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java",
+		 path: 'src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java']
+	]
+}
+
+dependencies {
+	implementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+	implementation 'org.tomlj:tomlj:1.1.1'
+	implementation 'com.google.guava:guava:23.2-jre'
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+tasks.register('generatePackVars', JavaExec) {
+	mainClass = 'melky.resourcepacks.generator.PackVarsGenerator'
+	classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.register('extractVars', JavaExec) {
+	mainClass = 'melky.resourcepacks.generator.DefaultVarsExtractor'
+	classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.register('generateSamples', JavaExec) {
+	mainClass = 'melky.resourcepacks.generator.SampleGenerator'
+	classpath = sourceSets.main.runtimeClasspath
+	systemProperty('sampleOutput', System.getProperty('sampleOutput'))
+	systemProperty('sampleMinifiedOutput', System.getProperty('sampleMinifiedOutput'))
+	systemProperty('chatColorsOutput', System.getProperty('chatColorsOutput'))
+	systemProperty('overridesPath', System.getProperty('overridesPath'))
+}
+
+tasks.register('generatePack', JavaExec) {
+	mainClass = 'melky.resourcepacks.generator.PackGenerator'
+	classpath = sourceSets.main.runtimeClasspath
+	systemProperty('spriteFolder', System.getProperty('spriteFolder'))
+	systemProperty('packFolder', System.getProperty('packFolder'))
+}

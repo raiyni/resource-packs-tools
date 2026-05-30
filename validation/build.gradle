@@ -1,0 +1,33 @@
+plugins {
+	id 'io.ryoung.java-downloader'
+}
+
+repositories {
+	mavenLocal()
+	maven { url = 'https://repo.runelite.net' }
+	mavenCentral()
+}
+
+def runeLiteVersion = 'latest.release'
+def baseRepoUrl = 'https://raw.githubusercontent.com/melkypie/resource-packs/refs/heads/master'
+
+javaDownload {
+	files = [
+		[url: "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/SpriteOverride.java",
+		 path: 'src/main/java/melky/resourcepacks/model/SpriteOverride.java']
+	]
+}
+
+dependencies {
+	implementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+	implementation 'com.google.guava:guava:23.2-jre'
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+tasks.register('checkPack', JavaExec) {
+	mainClass = 'melky.resourcepacks.PackCheck'
+	classpath = sourceSets.main.runtimeClasspath
+	systemProperty('spriteFolder', System.getProperty('spriteFolder'))
+	systemProperty('packFolder', System.getProperty('packFolder'))
+}

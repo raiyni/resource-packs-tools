@@ -1,0 +1,28 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation(gradleApi())
+
+    implementation "org.slf4j:slf4j-simple:1.7.10"
+    implementation "com.google.guava:guava:23.2-jre"
+
+    def lombok = "org.projectlombok:lombok:1.18.30"
+    compileOnly lombok
+    annotationProcessor lombok
+}
+
+gradlePlugin {
+    plugins {
+        register('java-downloader') {
+            id = 'io.ryoung.java-downloader'
+            implementationClass = 'io.ryoung.JavaDownloaderPlugin'
+        }
+    }
+}
