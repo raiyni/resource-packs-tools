@@ -24,6 +24,7 @@ dependencies {
 	implementation group: 'net.runelite', name: 'runelite-api', version: runeLiteVersion
 	implementation 'org.tomlj:tomlj:1.1.1'
 	implementation 'com.google.guava:guava:23.2-jre'
+	implementation 'org.slf4j:slf4j-api:1.7.36'
 	compileOnly 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
