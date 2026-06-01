@@ -21,22 +21,12 @@ javaDownload {
 }
 
 dependencies {
-	implementation group: 'net.runelite', name: 'runelite-api', version: runeLiteVersion
+	compileOnly group: 'net.runelite', name: 'runelite-api', version: runeLiteVersion
 	implementation 'org.tomlj:tomlj:1.1.1'
 	implementation 'com.google.guava:guava:23.2-jre'
 	implementation 'org.slf4j:slf4j-api:1.7.36'
 	compileOnly 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'
-}
-
-tasks.register('generatePackVars', JavaExec) {
-	mainClass = 'melky.resourcepacks.generator.PackVarsGenerator'
-	classpath = sourceSets.main.runtimeClasspath
-}
-
-tasks.register('extractVars', JavaExec) {
-	mainClass = 'melky.resourcepacks.generator.DefaultVarsExtractor'
-	classpath = sourceSets.main.runtimeClasspath
 }
 
 tasks.register('generateSamples', JavaExec) {

@@ -19,6 +19,13 @@ subprojects {
                 it.isDirectory() ? it : zipTree(it)
             }
         }
+        from {
+            configurations.compileClasspath.collect {
+                it.isDirectory() ? it : zipTree(it).matching {
+                    include 'net/runelite/api/gameval/SpriteID.class'
+                }
+            }
+        }
         with tasks.jar
     }
 }
