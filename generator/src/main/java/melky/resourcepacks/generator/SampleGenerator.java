@@ -26,14 +26,10 @@
 package melky.resourcepacks.generator;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.io.Files;
 import java.awt.Color;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,8 +46,7 @@ import org.tomlj.TomlTable;
 @Slf4j
 public class SampleGenerator
 {
-	private static String CHAT_COLORS_COMMENT = "# chat_colors requires Allow chat colors to be changed\n" +
-		"# Unused lines can be deleted or commented out with #\n";
+	private static final String OUTPUT_DIR = System.getProperty("outputDir", "sample-pack");
 
 	public static void main(String[] args)
 	{
@@ -69,24 +64,23 @@ public class SampleGenerator
 			{
 				if (table.isLong(k))
 				{
-					values.put(path + s, String.format("# color=0x%06x", new Color(table.getLong(k).intValue()).getRGB() & 16777215));
+					values.put(path + s, String.format("color=0x%06x", new Color(table.getLong(k).intValue()).getRGB() & 16777215));
 				}
 				else if (table.isString(k))
 				{
 
-					values.put(path + s, String.format("# color=\"%s\"", table.get(k)));
+					values.put(path + s, String.format("color=\"%s\"", table.get(k)));
 				}
 			}
 			else if (k.endsWith("opacity"))
 			{
 				if (table.isLong(k))
 				{
-					values.put(path + s, String.format("# opacity=%d", table.getLong(k).intValue()));
+					values.put(path + s, String.format("opacity=%d", table.getLong(k).intValue()));
 				}
 				else if (table.isString(k))
 				{
-
-					values.put(path + s, String.format("# opacity=\"%s\"", table.get(k)));
+					values.put(path + s, String.format("opacity=\"%s\"", table.get(k)));
 				}
 			}
 		}
@@ -100,6 +94,15 @@ public class SampleGenerator
 			return java.nio.file.Files.newInputStream(Paths.get(overridesPath));
 		}
 		return SampleGenerator.class.getResourceAsStream("/overrides/overrides.toml");
+	}
+
+	private static void writeOutput(String filename, String content) throws IOException
+	{
+		log.info(content);
+
+		File file = new File(OUTPUT_DIR, filename);
+		file.getParentFile().mkdirs();
+		Files.write(content, file, Charsets.UTF_8);
 	}
 
 	public static void createSample()
@@ -124,10 +127,26 @@ public class SampleGenerator
 				.collect(Collectors.toList());
 
 			var sb = new StringBuilder();
-			sb.append("# remove comments (#) on lines to see changes affected\n")
-				.append("# overlay color is in ARGB hex format\n")
-				.append("# [overlay]\n")
-				.append("# color=0x9C463D32\n");
+			sb.append("# Resource Pack Overrides\n")
+				.append("#\n")
+				.append("# Color values can be raw hex colors (0xRRGGBB) or variables defined\n")
+				.append("# in vars.toml using the template syntax:\n")
+				.append("#\n")
+				.append("#   color=\"${color.<name>}\"\n")
+				.append("#   opacity=\"${opacity.<name>}\"\n")
+				.append("#\n")
+				.append("# Overlay color is in ARGB hex format (0xAARRGGBB).\n")
+				.append("#\n")
+				.append("# Deleted or commented out sections will fall back to the default\n")
+				.append("# variable defined in vars.toml. If you remove all content from this\n")
+				.append("# file, all values will use the defaults from vars.toml.\n")
+				.append("# Variables not defined in either file will use the plugin default.\n")
+				.append("#\n")
+				.append("# You can reference custom variables defined in vars.toml to easily\n")
+				.append("# share colors across multiple sections.\n")
+				.append("\n")
+				.append("[overlay]\n")
+				.append("color=0x9C463D32\n");
 
 			Multimap<String, String> tables = TreeMultimap.create();
 			addKeys(toml, keys, tables, "");
@@ -149,22 +168,12 @@ public class SampleGenerator
 
 			for (var k : tables.keySet())
 			{
-				sb.append(String.format("\n# [%s]\n", k));
+				sb.append(String.format("\n[%s]\n", k));
 				sb.append(String.join("\n", tables.get(k)));
 				sb.append("\n");
 			}
 
-			log.info("{}", sb + "");
-
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			var selection = new StringSelection((sb + ""));
-			clipboard.setContents(selection, null);
-
-			if (!Strings.isNullOrEmpty(System.getProperty("sampleOutput")))
-			{
-				File file = new File(System.getProperty("sampleOutput"));
-				Files.write(sb + "", file, Charsets.UTF_8);
-			}
+			writeOutput("overrides.toml", sb + "");
 		}
 		catch (IOException e)
 		{
@@ -194,9 +203,25 @@ public class SampleGenerator
 				.collect(Collectors.toList());
 
 			var sb = new StringBuilder();
-			sb.append("# remove comments (#) on lines to see changes affected\n")
-				.append("# overlay color is in ARGB hex format\n")
-				.append("# overlay.color=0x9C463D32\n\n");
+			sb.append("# Resource Pack Overrides\n")
+				.append("#\n")
+				.append("# Color values can be raw hex colors (0xRRGGBB) or variables defined\n")
+				.append("# in vars.toml using the template syntax:\n")
+				.append("#\n")
+				.append("#   color=\"${color.<name>}\"\n")
+				.append("#   opacity=\"${opacity.<name>}\"\n")
+				.append("#\n")
+				.append("# Overlay color is in ARGB hex format (0xAARRGGBB).\n")
+				.append("#\n")
+				.append("# Deleted or commented out sections will fall back to the default\n")
+				.append("# variable defined in vars.toml. If you remove all content from this\n")
+				.append("# file, all values will use what is defined in vars.toml.\n")
+				.append("# Variables not defined in either file will use the plugin default.\n")
+				.append("#\n")
+				.append("# You can reference custom variables defined in vars.toml to easily\n")
+				.append("# share colors across multiple sections.\n")
+				.append("\n")
+				.append("overlay.color=0x9C463D32\n\n");
 
 			Multimap<String, String> tables = TreeMultimap.create();
 			addKeys(toml, keys, tables, "");
@@ -220,22 +245,12 @@ public class SampleGenerator
 			{
 				sb.append(tables.get(k)
 					.stream()
-					.map(s -> String.format("# %s.%s", k, s.replace("# ", "")))
+					.map(s -> String.format("%s.%s", k, s.replace("# ", "")))
 					.collect(Collectors.joining("\n")));
 				sb.append("\n\n");
 			}
 
-			log.info("{}", sb + "");
-
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			var selection = new StringSelection((sb + ""));
-			clipboard.setContents(selection, null);
-
-			if (!Strings.isNullOrEmpty(System.getProperty("sampleMinifiedOutput")))
-			{
-				File file = new File(System.getProperty("sampleMinifiedOutput"));
-				Files.write(sb + "", file, Charsets.UTF_8);
-			}
+			writeOutput("overrides.min.toml", sb + "");
 		}
 		catch (IOException e)
 		{
@@ -249,36 +264,24 @@ public class SampleGenerator
 		{
 			var sb = new StringBuilder();
 			sb.append("# chat_colors requires Allow chat colors to be enabled in settings\n")
-				.append("# missing values will use the default RuneLight value\n")
-				.append("# remove comments (#) on lines to see changes affected\n");
+				.append("# missing values will use the default RuneLite value\n")
+				.append("# Colors are hex values in 0xRRGGBB format (e.g. 0xff0000 = red)\n\n");
 
 			sb.append("\n[" + ChatColorKey.OPAQUE_KEY + "]\n");
 			for (var c : ChatColorKey.values())
 			{
-				sb.append("# ")
-					.append(c.toOverrideKey())
+				sb.append(c.toOverrideKey())
 					.append("=\n");
 			}
 
 			sb.append("\n[" + ChatColorKey.TRANSPARENT_KEY + "]\n");
 			for (var c : ChatColorKey.values())
 			{
-				sb.append("# ")
-					.append(c.toOverrideKey())
+				sb.append(c.toOverrideKey())
 					.append("=\n");
 			}
 
-			log.info("{}", sb + "");
-
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			var selection = new StringSelection((sb + ""));
-			clipboard.setContents(selection, null);
-
-			if (!Strings.isNullOrEmpty(System.getProperty("chatColorsOutput")))
-			{
-				File file = new File(System.getProperty("chatColorsOutput"));
-				Files.write(sb + "", file, Charsets.UTF_8);
-			}
+			writeOutput("chat_colors.toml", sb + "");
 		}
 		catch (IOException e)
 		{

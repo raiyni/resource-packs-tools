@@ -55,10 +55,10 @@ public class PackGenerator
 	public static void generatePack() throws IOException
 	{
 		String spriteFolder = System.getProperty("spriteFolder");
-		String packFolder = System.getProperty("packFolder");
-		if (Strings.isNullOrEmpty(spriteFolder) || Strings.isNullOrEmpty(packFolder))
+		String outputDir = System.getProperty("outputDir", "sample-pack");
+		if (Strings.isNullOrEmpty(spriteFolder))
 		{
-			throw new RuntimeException("inputFolder and outputFolder need to be defined");
+			throw new RuntimeException("spriteFolder needs to be defined");
 		}
 
 		for (SpriteOverride override : SpriteOverride.values())
@@ -67,7 +67,7 @@ public class PackGenerator
 			{
 				continue;
 			}
-			File folder = createOrRetrieve(packFolder + "/" + override.getFolder().toString().toLowerCase());
+			File folder = createOrRetrieve(outputDir + "/" + override.getFolder().toString().toLowerCase());
 			File destinationSprite = new File(folder, override.toString().toLowerCase().replaceFirst(override.getFolder().toString().toLowerCase() + "_", "") + ".png");
 			File sourceSprite;
 			if (override.getFrameID() != -1)
@@ -85,23 +85,23 @@ public class PackGenerator
 				log.info("Updated sprite " + override.name() + " (" + override.getSpriteID() + ")");
 			}
 		}
-		File outputFolderFile = new File(packFolder);
+		File outputFolderFile = new File(outputDir);
 		loopDirectory(outputFolderFile.listFiles(), outputFolderFile.getName(), spriteFolder, true);
 	}
 
 	public static void writeReports() throws IOException
 	{
-		String basePath = System.getProperty("user.dir");
+		String outputDir = System.getProperty("outputDir", "sample-pack");
 
 		log.info("logging {}", errors);
 
-		PrintWriter errorFile = new PrintWriter(basePath + '/' + "errors.txt", StandardCharsets.UTF_8);
+		PrintWriter errorFile = new PrintWriter(outputDir + '/' + "errors.txt", StandardCharsets.UTF_8);
 		errorFile.write(String.join("\n", errors));
 		errorFile.close();
 
 		log.info("logging {}", warnings);
 
-		PrintWriter warningsFile = new PrintWriter(basePath + '/' + "warnings.txt", StandardCharsets.UTF_8);
+		PrintWriter warningsFile = new PrintWriter(outputDir + '/' + "warnings.txt", StandardCharsets.UTF_8);
 		warningsFile.write(String.join("\n", warnings));
 		warningsFile.close();
 	}

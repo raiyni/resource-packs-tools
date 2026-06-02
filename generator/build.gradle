@@ -16,7 +16,11 @@ javaDownload {
 		[url: "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/SpriteOverride.java",
 		 path: 'src/main/java/melky/resourcepacks/model/SpriteOverride.java'],
 		[url: "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java",
-		 path: 'src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java']
+		 path: 'src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java'],
+        [url: "${baseRepoUrl}/src/main/resources/overrides/overrides.toml",
+         path: 'src/main/resources/overrides/overrides.toml'],
+        [url: "${baseRepoUrl}/src/main/resources/overrides/vars.toml",
+         path: 'src/main/resources/overrides/vars.toml']
 	]
 }
 
@@ -32,9 +36,7 @@ dependencies {
 tasks.register('generateSamples', JavaExec) {
 	mainClass = 'melky.resourcepacks.generator.SampleGenerator'
 	classpath = sourceSets.main.runtimeClasspath
-	systemProperty('sampleOutput', System.getProperty('sampleOutput'))
-	systemProperty('sampleMinifiedOutput', System.getProperty('sampleMinifiedOutput'))
-	systemProperty('chatColorsOutput', System.getProperty('chatColorsOutput'))
+	systemProperty('outputDir', System.getProperty('outputDir', 'out/sample-vanilla'))
 	systemProperty('overridesPath', System.getProperty('overridesPath'))
 }
 
@@ -42,5 +44,5 @@ tasks.register('generatePack', JavaExec) {
 	mainClass = 'melky.resourcepacks.generator.PackGenerator'
 	classpath = sourceSets.main.runtimeClasspath
 	systemProperty('spriteFolder', System.getProperty('spriteFolder'))
-	systemProperty('packFolder', System.getProperty('packFolder'))
+	systemProperty('outputDir', System.getProperty('outputDir', 'sample-pack'))
 }
