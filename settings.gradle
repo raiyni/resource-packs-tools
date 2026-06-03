@@ -1,4 +1,5 @@
 rootProject.name = 'resource-packs-tools'
 
+include 'common'
 include 'generator'
 include 'validation'

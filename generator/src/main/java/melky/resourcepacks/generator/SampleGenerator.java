@@ -25,14 +25,14 @@
 
 package melky.resourcepacks.generator;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
-import com.google.common.io.Files;
 import java.awt.Color;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -91,7 +91,7 @@ public class SampleGenerator
 		String overridesPath = System.getProperty("overridesPath");
 		if (overridesPath != null && !overridesPath.isEmpty())
 		{
-			return java.nio.file.Files.newInputStream(Paths.get(overridesPath));
+			return Files.newInputStream(Paths.get(overridesPath));
 		}
 		return SampleGenerator.class.getResourceAsStream("/overrides/overrides.toml");
 	}
@@ -100,9 +100,9 @@ public class SampleGenerator
 	{
 		log.info(content);
 
-		File file = new File(OUTPUT_DIR, filename);
-		file.getParentFile().mkdirs();
-		Files.write(content, file, Charsets.UTF_8);
+		Path file = Paths.get(OUTPUT_DIR, filename);
+		Files.createDirectories(file.getParent());
+		Files.writeString(file, content, StandardCharsets.UTF_8);
 	}
 
 	public static void createSample()

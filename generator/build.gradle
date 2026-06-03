@@ -1,48 +1,47 @@
 plugins {
-	id 'io.ryoung.java-downloader'
+    id 'io.ryoung.java-downloader'
 }
 
 repositories {
-	mavenLocal()
-	maven { url = 'https://repo.runelite.net' }
-	mavenCentral()
+    mavenLocal()
+    maven { url = 'https://repo.runelite.net' }
+    mavenCentral()
 }
 
 def runeLiteVersion = 'latest.release'
 def baseRepoUrl = 'https://raw.githubusercontent.com/melkypie/resource-packs/refs/heads/master'
 
 javaDownload {
-	files = [
-		[url: "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/SpriteOverride.java",
-		 path: 'src/main/java/melky/resourcepacks/model/SpriteOverride.java'],
-		[url: "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java",
-		 path: 'src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java'],
-        [url: "${baseRepoUrl}/src/main/resources/overrides/overrides.toml",
-         path: 'src/main/resources/overrides/overrides.toml'],
-        [url: "${baseRepoUrl}/src/main/resources/overrides/vars.toml",
-         path: 'src/main/resources/overrides/vars.toml']
-	]
+    files = [
+            [url : "${baseRepoUrl}/src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java",
+             path: 'src/main/java/melky/resourcepacks/model/runelite/ChatColorKey.java'],
+            [url : "${baseRepoUrl}/src/main/resources/overrides/overrides.toml",
+             path: 'src/main/resources/overrides/overrides.toml'],
+            [url : "${baseRepoUrl}/src/main/resources/overrides/vars.toml",
+             path: 'src/main/resources/overrides/vars.toml']
+    ]
 }
 
 dependencies {
-	compileOnly group: 'net.runelite', name: 'runelite-api', version: runeLiteVersion
-	implementation 'org.tomlj:tomlj:1.1.1'
-	implementation 'com.google.guava:guava:23.2-jre'
-	implementation 'org.slf4j:slf4j-api:1.7.36'
-	compileOnly 'org.projectlombok:lombok:1.18.30'
-	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    implementation project(':common')
+    compileOnly group: 'net.runelite', name: 'runelite-api', version: runeLiteVersion
+    implementation 'org.tomlj:tomlj:1.1.1'
+    implementation 'com.google.guava:guava:23.2-jre'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
 tasks.register('generateSamples', JavaExec) {
-	mainClass = 'melky.resourcepacks.generator.SampleGenerator'
-	classpath = sourceSets.main.runtimeClasspath
-	systemProperty('outputDir', System.getProperty('outputDir', 'out/sample-vanilla'))
-	systemProperty('overridesPath', System.getProperty('overridesPath'))
+    mainClass = 'melky.resourcepacks.generator.SampleGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty('outputDir', System.getProperty('outputDir', 'out/sample-vanilla'))
+    systemProperty('overridesPath', System.getProperty('overridesPath'))
 }
 
 tasks.register('generatePack', JavaExec) {
-	mainClass = 'melky.resourcepacks.generator.PackGenerator'
-	classpath = sourceSets.main.runtimeClasspath
-	systemProperty('spriteFolder', System.getProperty('spriteFolder'))
-	systemProperty('outputDir', System.getProperty('outputDir', 'sample-pack'))
+    mainClass = 'melky.resourcepacks.generator.PackGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty('spriteFolder', System.getProperty('spriteFolder'))
+    systemProperty('outputDir', System.getProperty('outputDir', 'sample-pack'))
 }
