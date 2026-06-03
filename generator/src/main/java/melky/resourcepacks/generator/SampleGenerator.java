@@ -144,7 +144,7 @@ public class SampleGenerator
 				.append("# share colors across multiple sections.\n")
 				.append("\n")
 				.append("[overlay]\n")
-				.append("color=0x9C463D32\n");
+				.append("color=\"${color.overlay}\"\n");
 
 			Multimap<String, String> tables = TreeMultimap.create();
 			addKeys(toml, keys, tables, "");
@@ -217,7 +217,7 @@ public class SampleGenerator
 				.append("# You can reference custom variables defined in vars.toml to easily\n")
 				.append("# share colors across multiple sections.\n")
 				.append("\n")
-				.append("overlay.color=0x9C463D32\n\n");
+				.append("overlay.color=\"${color.overlay}\"\n");
 
 			Multimap<String, String> tables = TreeMultimap.create();
 			addKeys(toml, keys, tables, "");
