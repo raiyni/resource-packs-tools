@@ -8,15 +8,13 @@ repositories {
     mavenCentral()
 }
 
-def runeLiteVersion = 'latest.release'
-
 dependencies {
     implementation project(':common')
-    compileOnly group: 'net.runelite', name: 'runelite-api', version: runeLiteVersion
-    implementation 'com.google.guava:guava:23.2-jre'
-    implementation 'org.slf4j:slf4j-api:1.7.36'
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    compileOnly libs.runelite.api
+    implementation libs.guava
+    implementation libs.slf4j.api
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 }
 
 jar {

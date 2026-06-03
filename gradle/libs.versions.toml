@@ -1,0 +1,13 @@
+[versions]
+guava = "23.2-jre"
+slf4j = "1.7.36"
+lombok = "1.18.30"
+runelite = "latest.release"
+tomlj = "1.1.1"
+
+[libraries]
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+runelite-api = { module = "net.runelite:runelite-api", version.ref = "runelite" }
+tomlj = { module = "org.tomlj:tomlj", version.ref = "tomlj" }

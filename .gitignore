@@ -3,6 +3,7 @@ build/
 .idea/
 *.iml
 model/
-*.toml
+vars.toml
+overrides.toml
 out/
 plans/
