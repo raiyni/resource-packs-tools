@@ -44,7 +44,7 @@ import org.tomlj.TomlParseResult;
 import org.tomlj.TomlTable;
 
 @Slf4j
-public class SampleGenerator
+public class OverridesBuilder
 {
 	private static final String OUTPUT_DIR = System.getProperty("outputDir", "sample-pack");
 
@@ -93,7 +93,7 @@ public class SampleGenerator
 		{
 			return Files.newInputStream(Paths.get(overridesPath));
 		}
-		return SampleGenerator.class.getResourceAsStream("/overrides/overrides.toml");
+		return OverridesBuilder.class.getResourceAsStream("/overrides/overrides.toml");
 	}
 
 	private static void writeOutput(String filename, String content) throws IOException

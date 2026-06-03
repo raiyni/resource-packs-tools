@@ -38,18 +38,18 @@ import melky.resourcepacks.common.SpriteFileUtils;
 import melky.resourcepacks.model.SpriteOverride;
 
 @Slf4j
-public class PackGenerator
+public class SpriteSyncer
 {
 	private static final List<String> errors = new ArrayList<>();
 	private static final List<String> warnings = new ArrayList<>();
 
 	public static void main(String[] args) throws IOException
 	{
-		generatePack();
+		syncSprites();
 		writeReports();
 	}
 
-	public static void generatePack() throws IOException
+	public static void syncSprites() throws IOException
 	{
 		String spriteFolder = System.getProperty("spriteFolder");
 		String outputDir = System.getProperty("outputDir", "sample-pack");

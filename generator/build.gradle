@@ -32,16 +32,30 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
+jar {
+    manifest {
+        attributes  'Main-Class': 'melky.resourcepacks.generator.PackBuilder'
+    }
+}
+
 tasks.register('generateSamples', JavaExec) {
-    mainClass = 'melky.resourcepacks.generator.SampleGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-    systemProperty('outputDir', System.getProperty('outputDir', 'out/sample-vanilla'))
-    systemProperty('overridesPath', System.getProperty('overridesPath'))
+	mainClass = 'melky.resourcepacks.generator.OverridesBuilder'
+	classpath = sourceSets.main.runtimeClasspath
+	systemProperty('outputDir', System.getProperty('outputDir', 'out/sample-vanilla'))
+	systemProperty('overridesPath', System.getProperty('overridesPath'))
 }
 
 tasks.register('generatePack', JavaExec) {
-    mainClass = 'melky.resourcepacks.generator.PackGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-    systemProperty('spriteFolder', System.getProperty('spriteFolder'))
-    systemProperty('outputDir', System.getProperty('outputDir', 'sample-pack'))
+	mainClass = 'melky.resourcepacks.generator.SpriteSyncer'
+	classpath = sourceSets.main.runtimeClasspath
+	systemProperty('spriteFolder', System.getProperty('spriteFolder'))
+	systemProperty('outputDir', System.getProperty('outputDir', 'sample-pack'))
+}
+
+tasks.register('buildPack', JavaExec) {
+	mainClass = 'melky.resourcepacks.generator.PackBuilder'
+	classpath = sourceSets.main.runtimeClasspath
+	systemProperty('spriteFolder', System.getProperty('spriteFolder'))
+	systemProperty('outputDir', System.getProperty('outputDir', 'sample-pack'))
+	systemProperty('overridesPath', System.getProperty('overridesPath'))
 }
