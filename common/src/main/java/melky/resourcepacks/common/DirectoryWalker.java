@@ -123,6 +123,7 @@ public class DirectoryWalker
 			if (delete)
 			{
 				Files.deleteIfExists(file);
+				log.info("Deleted missing file: {}/{}", dirName, file.getFileName());
 			}
 			else
 			{

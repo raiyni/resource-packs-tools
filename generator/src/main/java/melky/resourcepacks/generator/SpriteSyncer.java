@@ -27,8 +27,10 @@ package melky.resourcepacks.generator;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -71,9 +73,24 @@ public class SpriteSyncer
 			Path sourceSprite = SpriteFileUtils.resolveSourceSprite(spriteDir, override);
 			Path destinationSprite = SpriteFileUtils.resolveDestinationSprite(outputPath, override);
 
-			if (SpriteFileUtils.copySpriteIfDifferent(sourceSprite, destinationSprite))
+			if (!Files.exists(sourceSprite))
 			{
-				log.info("Updated sprite " + override.name() + " (" + override.getSpriteID() + ")");
+				log.info("Missing source sprite {} ({})", override.name(), override.getSpriteID());
+			}
+			else if (!Files.exists(destinationSprite))
+			{
+				SpriteFileUtils.createDirectories(destinationSprite.getParent());
+				Files.copy(sourceSprite, destinationSprite, StandardCopyOption.REPLACE_EXISTING);
+				log.info("New sprite {} ({})", override.name(), override.getSpriteID());
+			}
+			else if (!SpriteFileUtils.fileContentEquals(sourceSprite, destinationSprite))
+			{
+				Files.copy(sourceSprite, destinationSprite, StandardCopyOption.REPLACE_EXISTING);
+				log.info("Update sprite {} ({})", override.name(), override.getSpriteID());
+			}
+			else
+			{
+				log.info("Sprite up-to-date {} ({})", override.name(), override.getSpriteID());
 			}
 		}
 
