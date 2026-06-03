@@ -132,7 +132,7 @@ tasks.register('release') {
         if (dryRun) {
             println "[6/6] [DRY RUN] Would push commit and tag to remote"
         } else {
-            exec { commandLine 'git', 'push' }
+            exec { commandLine 'git', 'push', '-u', 'origin', 'HEAD' }
             exec { commandLine 'git', 'push', '--tags' }
             println "[6/6] Pushed commit and tag to remote"
         }
