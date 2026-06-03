@@ -46,7 +46,7 @@ public class SpriteSyncer
 	public static void main(String[] args) throws IOException
 	{
 		syncSprites();
-		writeReports();
+//		writeReports();
 	}
 
 	public static void syncSprites() throws IOException

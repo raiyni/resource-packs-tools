@@ -29,3 +29,123 @@ subprojects {
         with tasks.jar
     }
 }
+
+tasks.register('release') {
+    group = 'Release'
+    description = 'Prepares a release: bumps version, builds, commits, tags, and pushes. Use -PreleaseVersion=x.y.z [-PdryRun]'
+    doLast {
+        def releaseVersion = project.findProperty('releaseVersion')
+        if (!releaseVersion) {
+            throw new GradleException("Usage: gradlew release -PreleaseVersion=x.y.z [-PdryRun]")
+        }
+        if (!(releaseVersion =~ /^\d+\.\d+\.\d+$/).find()) {
+            throw new GradleException("Invalid version format: '${releaseVersion}'. Expected semver: x.y.z")
+        }
+
+        def dryRun = project.hasProperty('dryRun')
+        def buildFile = file('build.gradle')
+        def originalContent = buildFile.text
+        def currentVersion = project.version
+        def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+
+        println "=== Release Preparation ==="
+        println "Current version : ${currentVersion}"
+        println "Release version : ${releaseVersion}"
+        println "Dry run         : ${dryRun}"
+        println()
+
+        // Step 1: Update version in build.gradle
+        def newContent = originalContent.replaceFirst(/version\s*=\s*'[^']+'/, "version = '${releaseVersion}'")
+        if (newContent == originalContent) {
+            throw new GradleException("Could not find version declaration in build.gradle")
+        }
+        buildFile.text = newContent
+        println "[1/6] Updated build.gradle version to ${releaseVersion}"
+
+        // Step 2: Build verification
+        println "[2/6] Running clean build shadowJar..."
+        try {
+            exec {
+                if (isWindows) {
+                    commandLine 'cmd', '/c', 'gradlew.bat', 'clean', 'build', 'shadowJar', '--quiet'
+                } else {
+                    commandLine './gradlew', 'clean', 'build', 'shadowJar', '--quiet'
+                }
+            }
+            println "[2/6] Build successful"
+        } catch (Exception e) {
+            buildFile.text = originalContent
+            throw new GradleException("Build failed! Reverted build.gradle to version ${currentVersion}")
+        }
+
+        // Step 3: Get last tag
+        def lastTag = ''
+        try {
+            def tagResult = new ByteArrayOutputStream()
+            exec {
+                commandLine 'git', 'describe', '--tags', '--abbrev=0'
+                standardOutput = tagResult
+                errorOutput = new ByteArrayOutputStream()
+            }
+            lastTag = tagResult.toString().trim()
+        } catch (Exception ignored) {
+            lastTag = null
+        }
+
+        // Step 4: Generate changelog
+        def changelog = new ByteArrayOutputStream()
+        if (lastTag) {
+            exec {
+                commandLine 'git', 'log', "${lastTag}..HEAD", '--oneline'
+                standardOutput = changelog
+            }
+        } else {
+            exec {
+                commandLine 'git', 'log', '--oneline', '-20'
+                standardOutput = changelog
+            }
+        }
+        def changelogText = changelog.toString().trim()
+        println "[3/6] Changelog since ${lastTag ?: 'beginning'}:"
+        changelogText.eachLine { println "  ${it}" }
+        println()
+
+        // Step 5: Commit
+        if (dryRun) {
+            println "[4/6] [DRY RUN] Would commit: 'Release v${releaseVersion}'"
+        } else {
+            exec { commandLine 'git', 'add', 'build.gradle' }
+            exec { commandLine 'git', 'commit', '-m', "Release v${releaseVersion}" }
+            println "[4/6] Committed: 'Release v${releaseVersion}'"
+        }
+
+        // Step 6: Tag
+        def tagMessage = "Release v${releaseVersion}\n\n${changelogText}"
+        if (dryRun) {
+            println "[5/6] [DRY RUN] Would create annotated tag: v${releaseVersion}"
+        } else {
+            exec { commandLine 'git', 'tag', '-a', "v${releaseVersion}", '-m', tagMessage }
+            println "[5/6] Created annotated tag: v${releaseVersion}"
+        }
+
+        // Step 7: Push
+        if (dryRun) {
+            println "[6/6] [DRY RUN] Would push commit and tag to remote"
+        } else {
+            exec { commandLine 'git', 'push' }
+            exec { commandLine 'git', 'push', '--tags' }
+            println "[6/6] Pushed commit and tag to remote"
+        }
+
+        // Revert in dry-run so working tree stays clean
+        if (dryRun) {
+            buildFile.text = originalContent
+            println()
+            println "=== DRY RUN COMPLETE ==="
+            println "build.gradle reverted to version ${currentVersion}"
+        } else {
+            println()
+            println "=== RELEASE v${releaseVersion} COMPLETE ==="
+        }
+    }
+}
