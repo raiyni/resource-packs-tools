@@ -19,7 +19,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'melky.resourcepacks.PackCheck'
+        attributes 'Main-Class': 'melky.resourcepacks.validation.PackCheck'
     }
 }
 
