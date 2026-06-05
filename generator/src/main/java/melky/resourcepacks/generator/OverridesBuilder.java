@@ -53,6 +53,7 @@ public class OverridesBuilder
 		createSample();
 		createSampleMinified();
 		createChatColors();
+		createVars();
 	}
 
 	public static void addKeys(final TomlTable table, Collection<String> keys, Multimap<String, String> values, String path)
@@ -282,6 +283,20 @@ public class OverridesBuilder
 		catch (IOException e)
 		{
 			log.error("error writing chat colors", e);
+		}
+	}
+
+	public static void createVars()
+	{
+		try (var stream = OverridesBuilder.class.getResourceAsStream("/overrides/vars.toml"))
+		{
+			assert stream != null;
+			String content = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+			writeOutput("vars.toml", content);
+		}
+		catch (IOException e)
+		{
+			log.error("error copying vars.toml", e);
 		}
 	}
 }
