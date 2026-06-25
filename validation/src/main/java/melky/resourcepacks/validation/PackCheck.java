@@ -61,6 +61,11 @@ public class PackCheck
 			checkPackProperties(packFolder);
 			moveImages(spriteFolder, packFolder);
 		}
+		catch (Exception e)
+		{
+			errors.add(e.getMessage());
+			throw e;
+		}
 		finally
 		{
 			String basePath = System.getProperty("user.dir");
