@@ -51,7 +51,6 @@ public class OverridesBuilder
 	public static void main(String[] args)
 	{
 		createSample();
-		createSampleMinified();
 		createChatColors();
 		createVars();
 	}
@@ -173,81 +172,6 @@ public class OverridesBuilder
 			}
 
 			writeOutput("overrides.toml", sb + "");
-		}
-		catch (IOException e)
-		{
-			log.error("error loading overrides", e);
-		}
-	}
-
-	public static void createSampleMinified()
-	{
-		try (var stream = getOverridesStream())
-		{
-			assert stream != null;
-
-			TomlParseResult toml = Toml.parse(stream);
-			toml.errors().forEach(error -> log.error(error.toString()));
-
-			var keys = toml.dottedKeySet()
-				.stream()
-				.filter(k -> k.contains("color") || k.contains("opacity"))
-				.sorted()
-				.collect(Collectors.toList());
-
-			var lists = toml.dottedKeySet()
-				.stream()
-				.filter(k -> !(k.contains("scripts") || k.contains("dynamicChildren") || k.contains("children")) && toml.isArray(k))
-				.sorted()
-				.collect(Collectors.toList());
-
-			var sb = new StringBuilder();
-			sb.append("# Resource Pack Overrides\n")
-				.append("#\n")
-				.append("# Color values can be raw hex colors (0xRRGGBB) or variables defined\n")
-				.append("# in vars.toml using the template syntax:\n")
-				.append("#\n")
-				.append("#   color=\"${color.<name>}\"\n")
-				.append("#   opacity=\"${opacity.<name>}\"\n")
-				.append("#\n")
-				.append("# Overlay color is in ARGB hex format (0xAARRGGBB).\n")
-				.append("#\n")
-				.append("# Deleted or commented out sections will fall back to the default\n")
-				.append("# variable defined by the plugin.\n")
-				.append("#\n")
-				.append("# You can reference custom variables defined in vars.toml to easily\n")
-				.append("# share colors across multiple sections.\n")
-				.append("\n")
-				.append("overlay.color=\"${color.overlay}\"\n");
-
-			Multimap<String, String> tables = TreeMultimap.create();
-			addKeys(toml, keys, tables, "");
-
-			for (var l : lists)
-			{
-				TomlArray a = toml.getArray(l);
-				assert a != null;
-
-				for (var o : a.toList())
-				{
-					if (o instanceof TomlTable)
-					{
-						var t = (TomlTable) o;
-						addKeys(t, t.keySet(), tables, l);
-					}
-				}
-			}
-
-			for (var k : tables.keySet())
-			{
-				sb.append(tables.get(k)
-					.stream()
-					.map(s -> String.format("%s.%s", k, s.replace("# ", "")))
-					.collect(Collectors.joining("\n")));
-				sb.append("\n\n");
-			}
-
-			writeOutput("overrides.min.toml", sb + "");
 		}
 		catch (IOException e)
 		{
