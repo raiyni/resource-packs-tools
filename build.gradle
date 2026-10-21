@@ -78,9 +78,7 @@ tasks.register('release') {
             commandLine 'git', 'tag', '--list', tagName
             standardOutput = existingTagOutput
         }
-        if (existingTagOutput.toString().trim()) {
-            throw new GradleException("Tag ${tagName} already exists; resource-packs master has not changed since that release")
-        }
+        def tagAlreadyExists = existingTagOutput.toString().trim()
         println "Resource-packs revision: ${resourcePacksRef}"
         println "Release tag             : ${tagName}"
 
@@ -159,6 +157,8 @@ tasks.register('release') {
         def tagMessage = "Release ${tagName}\nResource-packs: ${resourcePacksRef}\n\n${changelogText}"
         if (dryRun) {
             println "[5/6] [DRY RUN] Would create annotated tag: ${tagName}"
+        } else if (tagAlreadyExists) {
+            println "[5/6] Reusing existing annotated tag: ${tagName}"
         } else {
             exec { commandLine 'git', 'tag', '-a', tagName, '-m', tagMessage }
             println "[5/6] Created annotated tag: ${tagName}"

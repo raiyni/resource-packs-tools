@@ -47,3 +47,27 @@ jobs:
           else
             ./gradlew release "-PreleaseVersion=$RELEASE_VERSION"
           fi
+
+      - name: Find created tag
+        if: ${{ !inputs.dryRun }}
+        id: release_tag
+        env:
+          RELEASE_VERSION: ${{ inputs.releaseVersion }}
+        run: |
+          tag="$(git tag --list "v${RELEASE_VERSION}" "v${RELEASE_VERSION}-*" --sort=-creatordate | head -n 1)"
+          if [ -z "$tag" ]; then
+            echo "No release tag found for version ${RELEASE_VERSION}" >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dryRun }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            generator/build/libs/generator-v*.jar
+            validation/build/libs/validation-v*.jar
