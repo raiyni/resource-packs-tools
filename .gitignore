@@ -7,3 +7,4 @@ vars.toml
 overrides.toml
 out/
 plans/
+bin/

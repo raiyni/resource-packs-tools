@@ -54,22 +54,56 @@ tasks.register('release') {
         println "Dry run         : ${dryRun}"
         println()
 
+        // Resolve the source revision once so all downloaded files match the release tag.
+        def resourcePacksRefOutput = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'ls-remote', 'https://github.com/melkypie/resource-packs.git', 'refs/heads/master'
+            standardOutput = resourcePacksRefOutput
+        }
+        def resourcePacksRefMatch = resourcePacksRefOutput.toString().trim() =~ /^([0-9a-f]{40})\s/
+        if (!resourcePacksRefMatch.find()) {
+            throw new GradleException("Could not resolve the resource-packs master revision")
+        }
+        def resourcePacksRef = resourcePacksRefMatch.group(1)
+        def resourcePacksShortHash = resourcePacksRef.substring(0, 7)
+        def versionTag = "v${releaseVersion}"
+        def versionTagOutput = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'tag', '--list', versionTag
+            standardOutput = versionTagOutput
+        }
+        def tagName = versionTagOutput.toString().trim() ? "${versionTag}-${resourcePacksShortHash}" : versionTag
+        def existingTagOutput = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'tag', '--list', tagName
+            standardOutput = existingTagOutput
+        }
+        if (existingTagOutput.toString().trim()) {
+            throw new GradleException("Tag ${tagName} already exists; resource-packs master has not changed since that release")
+        }
+        println "Resource-packs revision: ${resourcePacksRef}"
+        println "Release tag             : ${tagName}"
+
         // Step 1: Update version in build.gradle
-        def newContent = originalContent.replaceFirst(/version\s*=\s*'[^']+'/, "version = '${releaseVersion}'")
-        if (newContent == originalContent) {
+        if (!(originalContent =~ /version\s*=\s*'[^']+'/).find()) {
             throw new GradleException("Could not find version declaration in build.gradle")
         }
-        buildFile.text = newContent
-        println "[1/6] Updated build.gradle version to ${releaseVersion}"
+        def newContent = originalContent.replaceFirst(/version\s*=\s*'[^']+'/, "version = '${releaseVersion}'")
+        if (newContent != originalContent) {
+            buildFile.text = newContent
+            println "[1/6] Updated build.gradle version to ${releaseVersion}"
+        } else {
+            println "[1/6] Version is already ${releaseVersion}"
+        }
 
         // Step 2: Build verification
         println "[2/6] Running clean build shadowJar..."
         try {
             exec {
                 if (isWindows) {
-                    commandLine 'cmd', '/c', 'gradlew.bat', 'clean', 'build', 'shadowJar', '--quiet'
+                    commandLine 'cmd', '/c', 'gradlew.bat', "-PresourcePacksRef=${resourcePacksRef}", 'clean', 'build', 'shadowJar', '--quiet'
                 } else {
-                    commandLine './gradlew', 'clean', 'build', 'shadowJar', '--quiet'
+                    commandLine './gradlew', "-PresourcePacksRef=${resourcePacksRef}", 'clean', 'build', 'shadowJar', '--quiet'
                 }
             }
             println "[2/6] Build successful"
@@ -113,19 +147,21 @@ tasks.register('release') {
         // Step 5: Commit
         if (dryRun) {
             println "[4/6] [DRY RUN] Would commit: 'Release v${releaseVersion}'"
-        } else {
+        } else if (newContent != originalContent) {
             exec { commandLine 'git', 'add', 'build.gradle' }
             exec { commandLine 'git', 'commit', '-m', "Release v${releaseVersion}" }
             println "[4/6] Committed: 'Release v${releaseVersion}'"
+        } else {
+            println "[4/6] No version change to commit"
         }
 
         // Step 6: Tag
-        def tagMessage = "Release v${releaseVersion}\n\n${changelogText}"
+        def tagMessage = "Release ${tagName}\nResource-packs: ${resourcePacksRef}\n\n${changelogText}"
         if (dryRun) {
-            println "[5/6] [DRY RUN] Would create annotated tag: v${releaseVersion}"
+            println "[5/6] [DRY RUN] Would create annotated tag: ${tagName}"
         } else {
-            exec { commandLine 'git', 'tag', '-a', "v${releaseVersion}", '-m', tagMessage }
-            println "[5/6] Created annotated tag: v${releaseVersion}"
+            exec { commandLine 'git', 'tag', '-a', tagName, '-m', tagMessage }
+            println "[5/6] Created annotated tag: ${tagName}"
         }
 
         // Step 7: Push
@@ -145,7 +181,7 @@ tasks.register('release') {
             println "build.gradle reverted to version ${currentVersion}"
         } else {
             println()
-            println "=== RELEASE v${releaseVersion} COMPLETE ==="
+            println "=== RELEASE ${tagName} COMPLETE ==="
         }
     }
 }

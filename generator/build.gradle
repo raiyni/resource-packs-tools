@@ -8,7 +8,8 @@ repositories {
     mavenCentral()
 }
 
-def baseRepoUrl = 'https://raw.githubusercontent.com/melkypie/resource-packs/refs/heads/master'
+def resourcePacksRef = findProperty('resourcePacksRef') ?: 'refs/heads/master'
+def baseRepoUrl = "https://raw.githubusercontent.com/melkypie/resource-packs/${resourcePacksRef}"
 
 javaDownload {
     files = [
